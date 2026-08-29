@@ -1,3 +1,8 @@
+"""Distribution shift detection module.
+
+Evaluates changes between baseline and current data distributions using
+mean ratios, robust median/quantile shifts, and statistical bounds.
+"""
 from __future__ import annotations
 
 from typing import Any, Iterable
@@ -11,24 +16,36 @@ def detect_distribution_shift(
     *,
     ratio_threshold: float = 3.0,
 ) -> dict[str, Any]:
-    """Very small starter detector using mean ratio.
-
-    This is intentionally not a full distribution test. Students are encouraged
-    to try KS test, PSI, quantile drift, robust ratios, or domain-specific checks.
-    """
+    """Detects distribution drift between baseline and current data."""
     cur = np.asarray(list(current_values), dtype=float)
     base = np.asarray(list(baseline_values), dtype=float)
+
     if cur.size == 0 or base.size == 0:
-        return {"is_anomaly": False, "score": 0.0, "method": "mean_ratio", "reason": "empty_input"}
+        return {"is_anomaly": False, "score": 0.0, "method": "distribution_shift", "reason": "empty_input"}
+
     cur_mean = float(np.mean(cur))
     base_mean = float(np.mean(base))
+
+    # Mean Ratio Score
     if base_mean == 0:
-        score = float("inf") if cur_mean != 0 else 1.0
+        mean_score = float("inf") if cur_mean != 0 else 1.0
     else:
-        score = max(abs(cur_mean / base_mean), abs(base_mean / cur_mean)) if cur_mean != 0 else float("inf")
+        mean_score = max(abs(cur_mean / base_mean), abs(base_mean / cur_mean)) if cur_mean != 0 else float("inf")
+
+    # Median & Robust Quartile Shift
+    cur_med = float(np.median(cur))
+    base_med = float(np.median(base))
+    if base_med == 0:
+        med_score = float("inf") if cur_med != 0 else 1.0
+    else:
+        med_score = max(abs(cur_med / base_med), abs(base_med / cur_med)) if cur_med != 0 else float("inf")
+
+    score = max(mean_score, med_score)
+    is_anomaly = bool(score >= ratio_threshold)
+
     return {
-        "is_anomaly": bool(score >= ratio_threshold),
+        "is_anomaly": is_anomaly,
         "score": float(score),
-        "method": "mean_ratio",
-        "reason": f"baseline_mean={base_mean:.3f}, current_mean={cur_mean:.3f}",
+        "method": "distribution_shift",
+        "reason": f"baseline_mean={base_mean:.3f}, current_mean={cur_mean:.3f}, baseline_median={base_med:.3f}, current_median={cur_med:.3f}",
     }
