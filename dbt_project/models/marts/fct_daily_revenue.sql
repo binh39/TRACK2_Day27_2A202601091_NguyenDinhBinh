@@ -1,6 +1,4 @@
--- NOTE: This model is intentionally simple. If the customer dimension has more
--- than one active row per customer, the join can inflate revenue without a SQL
--- error. Students should add tests/unit tests that expose this failure mode.
+-- Daily revenue mart model protected against customer dimension SCD row duplication.
 
 with completed_orders as (
     select *
@@ -9,8 +7,13 @@ with completed_orders as (
 ),
 active_customers as (
     select *
-    from {{ ref('stg_customers') }}
-    where is_active = true
+    from (
+        select *,
+            row_number() over (partition by customer_id order by valid_from desc) as rn
+        from {{ ref('stg_customers') }}
+        where is_active = true
+    ) sub
+    where rn = 1
 )
 select
     o.order_date,
