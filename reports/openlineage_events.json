@@ -1,0 +1,278 @@
+[
+  {
+    "eventType": "START",
+    "eventTime": "2026-08-29T04:15:29.708357+00:00",
+    "run": {
+      "runId": "ad0816e2-0bd2-4fdf-9d3c-099dbde3991e",
+      "facets": {
+        "nominalTime": {
+          "_producer": "openlineage-ecom",
+          "nominalStartTime": "2026-08-29T04:15:29.708357+00:00"
+        }
+      }
+    },
+    "job": {
+      "namespace": "vinai.ecom.reliability",
+      "name": "daily_revenue_pipeline",
+      "facets": {
+        "documentation": {
+          "description": "Transforms raw e-commerce orders into daily revenue business marts."
+        }
+      }
+    },
+    "inputs": [
+      {
+        "namespace": "vinai.data_warehouse",
+        "name": "raw_orders",
+        "facets": {
+          "schema": {
+            "_producer": "openlineage-ecom",
+            "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/SchemaDatasetFacet.json",
+            "fields": [
+              {
+                "name": "order_id",
+                "type": "BIGINT",
+                "description": "Primary key"
+              },
+              {
+                "name": "customer_id",
+                "type": "VARCHAR"
+              },
+              {
+                "name": "amount",
+                "type": "DOUBLE"
+              },
+              {
+                "name": "currency",
+                "type": "VARCHAR"
+              },
+              {
+                "name": "status",
+                "type": "VARCHAR"
+              }
+            ]
+          },
+          "dataSource": {
+            "name": "duckdb_warehouse",
+            "uri": "duckdb://warehouse/game_day.duckdb"
+          }
+        }
+      },
+      {
+        "namespace": "vinai.data_warehouse",
+        "name": "raw_customers",
+        "facets": {
+          "schema": {
+            "_producer": "openlineage-ecom",
+            "fields": [
+              {
+                "name": "customer_id",
+                "type": "VARCHAR"
+              },
+              {
+                "name": "is_active",
+                "type": "BOOLEAN"
+              },
+              {
+                "name": "valid_from",
+                "type": "TIMESTAMP"
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "outputs": [
+      {
+        "namespace": "vinai.data_warehouse",
+        "name": "fct_daily_revenue",
+        "facets": {
+          "schema": {
+            "_producer": "openlineage-ecom",
+            "fields": [
+              {
+                "name": "order_date",
+                "type": "DATE"
+              },
+              {
+                "name": "completed_order_rows",
+                "type": "BIGINT"
+              },
+              {
+                "name": "daily_revenue",
+                "type": "DOUBLE"
+              }
+            ]
+          },
+          "columnLineage": {
+            "_producer": "openlineage-ecom",
+            "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/ColumnLineageDatasetFacet.json",
+            "fields": {
+              "daily_revenue": {
+                "inputFields": [
+                  {
+                    "namespace": "vinai.data_warehouse",
+                    "name": "raw_orders",
+                    "field": "amount"
+                  }
+                ],
+                "transformationType": "SUM",
+                "transformationDescription": "sum(amount_usd) where status = 'completed'"
+              },
+              "completed_order_rows": {
+                "inputFields": [
+                  {
+                    "namespace": "vinai.data_warehouse",
+                    "name": "raw_orders",
+                    "field": "order_id"
+                  }
+                ],
+                "transformationType": "COUNT"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "producer": "https://github.com/OpenLineage/OpenLineage/tree/1.0.0",
+    "schemaURL": "https://openlineage.io/spec/1-0-2/OpenLineage.json"
+  },
+  {
+    "eventType": "COMPLETE",
+    "eventTime": "2026-08-29T04:15:29.709660+00:00",
+    "run": {
+      "runId": "ad0816e2-0bd2-4fdf-9d3c-099dbde3991e",
+      "facets": {
+        "nominalTime": {
+          "_producer": "openlineage-ecom",
+          "nominalStartTime": "2026-08-29T04:15:29.709660+00:00"
+        }
+      }
+    },
+    "job": {
+      "namespace": "vinai.ecom.reliability",
+      "name": "daily_revenue_pipeline",
+      "facets": {
+        "documentation": {
+          "description": "Transforms raw e-commerce orders into daily revenue business marts."
+        }
+      }
+    },
+    "inputs": [
+      {
+        "namespace": "vinai.data_warehouse",
+        "name": "raw_orders",
+        "facets": {
+          "schema": {
+            "_producer": "openlineage-ecom",
+            "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/SchemaDatasetFacet.json",
+            "fields": [
+              {
+                "name": "order_id",
+                "type": "BIGINT",
+                "description": "Primary key"
+              },
+              {
+                "name": "customer_id",
+                "type": "VARCHAR"
+              },
+              {
+                "name": "amount",
+                "type": "DOUBLE"
+              },
+              {
+                "name": "currency",
+                "type": "VARCHAR"
+              },
+              {
+                "name": "status",
+                "type": "VARCHAR"
+              }
+            ]
+          },
+          "dataSource": {
+            "name": "duckdb_warehouse",
+            "uri": "duckdb://warehouse/game_day.duckdb"
+          }
+        }
+      },
+      {
+        "namespace": "vinai.data_warehouse",
+        "name": "raw_customers",
+        "facets": {
+          "schema": {
+            "_producer": "openlineage-ecom",
+            "fields": [
+              {
+                "name": "customer_id",
+                "type": "VARCHAR"
+              },
+              {
+                "name": "is_active",
+                "type": "BOOLEAN"
+              },
+              {
+                "name": "valid_from",
+                "type": "TIMESTAMP"
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "outputs": [
+      {
+        "namespace": "vinai.data_warehouse",
+        "name": "fct_daily_revenue",
+        "facets": {
+          "schema": {
+            "_producer": "openlineage-ecom",
+            "fields": [
+              {
+                "name": "order_date",
+                "type": "DATE"
+              },
+              {
+                "name": "completed_order_rows",
+                "type": "BIGINT"
+              },
+              {
+                "name": "daily_revenue",
+                "type": "DOUBLE"
+              }
+            ]
+          },
+          "columnLineage": {
+            "_producer": "openlineage-ecom",
+            "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/ColumnLineageDatasetFacet.json",
+            "fields": {
+              "daily_revenue": {
+                "inputFields": [
+                  {
+                    "namespace": "vinai.data_warehouse",
+                    "name": "raw_orders",
+                    "field": "amount"
+                  }
+                ],
+                "transformationType": "SUM",
+                "transformationDescription": "sum(amount_usd) where status = 'completed'"
+              },
+              "completed_order_rows": {
+                "inputFields": [
+                  {
+                    "namespace": "vinai.data_warehouse",
+                    "name": "raw_orders",
+                    "field": "order_id"
+                  }
+                ],
+                "transformationType": "COUNT"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "producer": "https://github.com/OpenLineage/OpenLineage/tree/1.0.0",
+    "schemaURL": "https://openlineage.io/spec/1-0-2/OpenLineage.json"
+  }
+]

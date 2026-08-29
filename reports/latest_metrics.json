@@ -1,14 +1,22 @@
 {
-  "timestamp": "2026-08-29T02:38:59.349718+00:00",
+  "timestamp": "2026-08-29T04:15:29.715845+00:00",
   "orders_rows": 600,
   "orders_failed_contract_checks": 0,
   "orders_critical_failures": 0,
   "orders_action": "allow",
-  "orders_freshness_minutes": 5.922395266666666,
+  "orders_freshness_minutes": 5.028028766666667,
+  "quarantine_summary": {
+    "total_rows": 600,
+    "clean_rows": 600,
+    "quarantined_rows": 0,
+    "quarantine_rate": 0.0,
+    "reasons": []
+  },
+  "soda_failed_checks": 0,
   "kb_docs_count": 5,
   "kb_failed_contract_checks": 0,
   "kb_action": "allow",
-  "kb_freshness_minutes": 10.91703025,
+  "kb_freshness_minutes": 10.023993149999999,
   "row_count_anomaly": {
     "is_anomaly": true,
     "score": 18.751099999999997,
@@ -30,6 +38,20 @@
     "reason": "mean=1.007, std=0.015, threshold=3.0",
     "metric": "embedding_norm_mean",
     "current_mean": 1.0
+  },
+  "kb_cosine_drift_signal": {
+    "is_anomaly": false,
+    "score": 0.00010939592816550103,
+    "method": "cosine_distance_drift",
+    "threshold": 0.2,
+    "reason": "mean_cosine_distance=0.0001 vs threshold=0.2000"
+  },
+  "kb_token_drift_signal": {
+    "is_anomaly": false,
+    "score": 0.0,
+    "method": "token_tvd_drift",
+    "threshold": 0.35,
+    "reason": "tvd_score=0.0000, vocab_size=64, threshold=0.35"
   },
   "contract_slo": {
     "target": 0.999,
@@ -66,5 +88,5 @@
   ],
   "failed_contract_checks": 0,
   "critical_contract_failures": 0,
-  "freshness_minutes": 5.922395266666666
+  "freshness_minutes": 5.028028766666667
 }

@@ -1,0 +1,46 @@
+# Soda Data Contract Specification for E-Commerce Orders
+dataset: orders
+filter: ""
+
+columns:
+  - name: order_id
+    data_type: integer
+    checks:
+      - missing_count(order_id) == 0
+      - duplicate_count(order_id) == 0
+
+  - name: customer_id
+    data_type: string
+    checks:
+      - missing_count(customer_id) == 0
+
+  - name: amount
+    data_type: number
+    checks:
+      - min(amount) >= 0.0
+
+  - name: currency
+    data_type: string
+    checks:
+      - invalid_count(currency) == 0:
+          valid_values: ['USD', 'VND']
+
+  - name: status
+    data_type: string
+    checks:
+      - invalid_count(status) == 0:
+          valid_values: ['pending', 'completed', 'refunded', 'cancelled']
+
+  - name: created_at
+    data_type: timestamp
+    checks:
+      - missing_count(created_at) == 0
+
+  - name: updated_at
+    data_type: timestamp
+    checks:
+      - missing_count(updated_at) == 0
+      - freshness(updated_at) <= 60m
+
+checks:
+  - row_count > 0

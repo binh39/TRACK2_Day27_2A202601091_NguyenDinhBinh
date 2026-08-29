@@ -1,0 +1,89 @@
+{
+  "metadata": {
+    "generator": "elementary_oss_adapter",
+    "version": "0.14.0",
+    "generated_at": "2026-08-29T04:15:29.710685+00:00",
+    "environment": "production_game_day"
+  },
+  "tables": {
+    "orders": {
+      "row_count": 600,
+      "freshness_minutes": 5.03,
+      "columns_count": 7,
+      "columns": [
+        "order_id",
+        "customer_id",
+        "amount",
+        "currency",
+        "status",
+        "created_at",
+        "updated_at"
+      ]
+    }
+  },
+  "column_profiling": {
+    "order_id": {
+      "null_count": 0,
+      "null_rate": 0.0,
+      "distinct_count": 600
+    },
+    "customer_id": {
+      "null_count": 0,
+      "null_rate": 0.0,
+      "distinct_count": 75
+    },
+    "amount": {
+      "null_count": 0,
+      "null_rate": 0.0,
+      "distinct_count": 583
+    },
+    "currency": {
+      "null_count": 0,
+      "null_rate": 0.0,
+      "distinct_count": 1
+    },
+    "status": {
+      "null_count": 0,
+      "null_rate": 0.0,
+      "distinct_count": 4
+    },
+    "created_at": {
+      "null_count": 0,
+      "null_rate": 0.0,
+      "distinct_count": 189
+    },
+    "updated_at": {
+      "null_count": 0,
+      "null_rate": 0.0,
+      "distinct_count": 22
+    }
+  },
+  "table_anomalies": [],
+  "column_anomalies": [],
+  "dbt_test_runs": [
+    {
+      "test_name": "unique_stg_orders_order_id",
+      "status": "pass",
+      "type": "generic"
+    },
+    {
+      "test_name": "not_null_stg_orders_order_id",
+      "status": "pass",
+      "type": "generic"
+    },
+    {
+      "test_name": "assert_daily_revenue_matches_completed_orders",
+      "status": "pass",
+      "type": "singular"
+    },
+    {
+      "test_name": "test_completed_orders_sum_to_expected_revenue",
+      "status": "pass",
+      "type": "unit"
+    }
+  ],
+  "summary": {
+    "total_anomalies": 0,
+    "status": "healthy"
+  }
+}

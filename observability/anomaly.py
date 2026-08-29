@@ -3,6 +3,8 @@
 Supports:
 - Z-score baseline detector,
 - Median Absolute Deviation (MAD) robust detector with zero-MAD edge case handling,
+- Exponentially Weighted Moving Average (EWMA) detector for time series trend adaptation,
+- Same-weekday / seasonality-aware detector,
 - Context-aware auto detector supporting day-of-week seasonality, segment history,
   and outlier-resilient baselines.
 """
@@ -32,7 +34,10 @@ def zscore_detector(current: float, history: Iterable[float], threshold: float =
 
 
 def mad_detector(current: float, history: Iterable[float], threshold: float = 3.5) -> dict[str, Any]:
-    """Robust anomaly detector using Median Absolute Deviation (MAD)."""
+    """Robust anomaly detector using Median Absolute Deviation (MAD).
+
+    Scales MAD with 0.6745 (Modified Z-score). Handles zero-MAD edge cases cleanly.
+    """
     values = np.asarray(list(history), dtype=float)
     if values.size < 5:
         return {"is_anomaly": False, "score": 0.0, "method": "mad", "reason": "insufficient_history"}
@@ -66,6 +71,64 @@ def mad_detector(current: float, history: Iterable[float], threshold: float = 3.
     }
 
 
+def ewma_detector(
+    current: float,
+    history: Iterable[float],
+    alpha: float = 0.3,
+    threshold: float = 3.0,
+) -> dict[str, Any]:
+    """Exponentially Weighted Moving Average (EWMA) anomaly detector."""
+    values = np.asarray(list(history), dtype=float)
+    if values.size < 3:
+        return {"is_anomaly": False, "score": 0.0, "method": "ewma", "reason": "insufficient_history"}
+
+    # Compute EWMA series
+    ewma = values[0]
+    ewma_var = 0.0
+    for i in range(1, len(values)):
+        diff = values[i] - ewma
+        ewma = alpha * values[i] + (1 - alpha) * ewma
+        ewma_var = (1 - alpha) * (ewma_var + alpha * (diff**2))
+
+    std_est = np.sqrt(ewma_var) if ewma_var > 0 else float(np.std(values))
+    if std_est == 0:
+        score = float("inf") if float(current) != ewma else 0.0
+    else:
+        score = abs(float(current) - ewma) / std_est
+
+    return {
+        "is_anomaly": bool(score > threshold),
+        "score": float(score),
+        "method": "ewma",
+        "reason": f"ewma_mean={ewma:.3f}, ewma_std={std_est:.3f}, threshold={threshold}",
+    }
+
+
+def same_weekday_detector(
+    current: float,
+    history_with_dow: list[tuple[int, float]],
+    target_dow: int,
+    threshold: float = 3.0,
+) -> dict[str, Any]:
+    """Slices historical metrics for the target day-of-week and evaluates anomaly."""
+    same_dow_values = [val for dow, val in history_with_dow if dow == target_dow]
+    if len(same_dow_values) >= 5:
+        res = mad_detector(current, same_dow_values, threshold=threshold)
+        res["method"] = "same_weekday:mad"
+        res["day_of_week"] = target_dow
+        return res
+    if len(same_dow_values) >= 3:
+        res = zscore_detector(current, same_dow_values, threshold=threshold)
+        res["method"] = "same_weekday:zscore"
+        res["day_of_week"] = target_dow
+        return res
+    # Fallback to general history
+    all_values = [val for _, val in history_with_dow]
+    res = zscore_detector(current, all_values, threshold=threshold)
+    res["method"] = "same_weekday:fallback_all"
+    return res
+
+
 def detect_anomaly(
     current: float,
     history: Iterable[float],
@@ -78,6 +141,7 @@ def detect_anomaly(
 
     - `zscore`: standard z-score.
     - `mad`: robust median absolute deviation.
+    - `ewma`: exponentially weighted moving average.
     - `auto`: inspects context (e.g. `same_segment_history`, `day_of_week`,
       outlier prevalence) and selects the most appropriate detector.
     """
@@ -85,6 +149,17 @@ def detect_anomaly(
         return mad_detector(current, history, threshold=threshold)
     if method == "zscore":
         return zscore_detector(current, history, threshold=threshold)
+    if method == "ewma":
+        return ewma_detector(current, history, threshold=threshold)
+    if method == "same_weekday":
+        if context and "history_with_dow" in context and "day_of_week" in context:
+            return same_weekday_detector(
+                current, context["history_with_dow"], context["day_of_week"], threshold=threshold
+            )
+        if context and "same_segment_history" in context:
+            return mad_detector(current, context["same_segment_history"], threshold=threshold)
+        return mad_detector(current, history, threshold=threshold)
+
     if method == "auto":
         hist_list = list(history)
 
